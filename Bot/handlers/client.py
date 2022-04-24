@@ -6,8 +6,9 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher import FSMContext
 import database.sqlite_db as db 
 from aiogram.dispatcher.filters import Text
+from keyboards.client import *
 
-class FSMClient(StatesGroup):
+class RegisterFMS(StatesGroup):
     telegram_id = State()
     username = State()
     name = State()
@@ -16,61 +17,65 @@ class FSMClient(StatesGroup):
     grade_letter = State()
     status = State()
 
-async def start(message: types.Message):
-    await message.answer('Привет! Это чат бот для организациитвоеё работы! Пожалуйста зарегистрируйся командой /register, если ты не зарегистрировался.')
 
+async def start(message: types.Message):
+    if db.get_inf('Users', 'telegram_id', message.from_user.id):
+        reply = f'Пртвет {message.from_user.first_name}'
+        kb = kbc.kb
+    else:
+        reply = 'Привет! Это чат бот для организациитвоеё работы! Пожалуйста зарегистрируйся командой /register, если ты не зарегистрировался.'
+        kb = kbr.kb
+    await message.answer(reply, reply_markup=kb)
 
 async def register(message: types.Message, state:FSMContext):
-    FSMClient.telegram_id.set()
+    RegisterFMS.telegram_id.set()
     async with state.proxy() as data:
         data['telegram_id'] = message.from_user.id
-    FSMClient.username.set()
+    RegisterFMS.username.set()
     async with state.proxy() as data:
         data['username'] = message.from_user.first_name
-    await FSMClient.name.set() 
-    await message.answer('Введи имя')
+    await RegisterFMS.name.set() 
+    await message.answer('Введи имя', reply_markup=ReplyKeyboardRemove())
  
 
 async def reg_name(message: types.Message, state:FSMContext):
     async with state.proxy() as data:
         data['name'] = message.text
-    await FSMClient.next()
+    await RegisterFMS.next()
     await message.answer('Введи фамилию')
 
 async def reg_surname(message: types.Message, state:FSMContext):
     async with state.proxy() as data:
         data['surname'] = message.text
-    await FSMClient.next()
+    await RegisterFMS.next()
     await message.answer('Введи номер класса')
 
 async def reg_grade_num(message: types.Message, state:FSMContext):
     async with state.proxy() as data:
         data['grade_num'] = int(message.text)
-    await FSMClient.next()
+    await RegisterFMS.next()
     await message.answer('Введи букву класса')
 
 async def reg_grade_letter(message: types.Message, state:FSMContext):
     async with state.proxy() as data:
         data['grade_letter'] = message.text.upper()
-    db.add_User(state)
+    await db.add_User(state)
     await state.finish()
-    await message.answer('Спасибо!')
-    
+    await message.answer('Спасибо!', reply_markup=kbc.kb)
 
-
-async def cancel(message: types.Message, state: FSMContext):
-    await state.finish()
-    await message.reply('OK')
-
-
+async def get_events(message: types.Message):
+   
+    data = db.get_inf('Events')
+    if data:
+        for i in data:
+            response = f'Название ивента: {i[0]}\nОписание ивента: {i[1]}\nДата: {i[2]}'
+            await message.answer(response)
 
 def register_handlers_client(dp:Dispatcher):
     dp.register_message_handler(start, commands=['start'])
     dp.register_message_handler(register, commands=['register'] ,state=None)
-    dp.register_message_handler(reg_name, state=FSMClient.name)
-    dp.register_message_handler(reg_surname, state=FSMClient.surname)
-    dp.register_message_handler(reg_grade_num, state=FSMClient.grade_num)
-    dp.register_message_handler(reg_grade_letter, state=FSMClient.grade_letter)
-    dp.register_message_handler(cancel, state="*", commands=['отмена', 'cancel'])
-    dp.register_message_handler(cancel, Text(equals='отмена', ignore_case=True),state="*")
+    dp.register_message_handler(reg_name, state=RegisterFMS.name)
+    dp.register_message_handler(reg_surname, state=RegisterFMS.surname)
+    dp.register_message_handler(reg_grade_num, state=RegisterFMS.grade_num)
+    dp.register_message_handler(reg_grade_letter, state=RegisterFMS.grade_letter)
     

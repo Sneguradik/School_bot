@@ -7,20 +7,32 @@ def on_start():
     if db:
         print('DB connected')
 
-async def get_inf(table_name, param_name=None, param=None):
-    try:
-        if param_name == None:
-            res = cur.execute(f'SELECT * FROM {table_name}').fetchall()
-        else:
-            res = cur.execute(f'SELECT * FROM {table_name} WHERE {param_name}={param}').fetchall()
-        print(res)
-        return res
-    except:
-        pass
+def get_inf(table_name, param_name=None, param=None):
+    if param_name == None:
+        res = cur.execute(f'SELECT * FROM {table_name}').fetchall()
+    else:
+        res = cur.execute(f'SELECT * FROM {table_name} WHERE {param_name}=?',(param,)).fetchall()
+    print(res)
+    return res
 
-def add_User(state):
-    try:
-        with state.proxy as data:
-            cur.execute(f'INSERT INTO Users VALUES(?,?,?,?,?,?,?,?)',tuple(data.values).append('student'))
-    except:
-        pass        
+async def add_User(state):
+    
+    async with state.proxy() as data:
+        dt = list(data.values())
+        dt.append('student')
+        tuple(dt)
+        cur.execute(f'INSERT INTO Users (telegram_id,username,name,surname,grade_num,grade_letter,status) VALUES(?,?,?,?,?,?,?)',dt)
+        db.commit()
+
+async def add_Event(state):
+    
+    async with state.proxy() as data:
+        dt = list(data.values())
+        tuple(dt)
+        cur.execute(f'INSERT INTO Event (name,description, date) VALUES(?,?,?)',dt)
+        db.commit()       
+
+if __name__ == "__main__":
+    on_start()
+    get_inf('Users', 'status','teacher')
+    
