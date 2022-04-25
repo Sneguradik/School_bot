@@ -29,7 +29,7 @@ async def add_Event(state):
     async with state.proxy() as data:
         dt = list(data.values())
         tuple(dt)
-        cur.execute(f'INSERT INTO Event (name,description, date) VALUES(?,?,?)',dt)
+        cur.execute(f'INSERT INTO Events (name,description, date) VALUES(?,?,?)',dt)
         db.commit()       
 
 if __name__ == "__main__":

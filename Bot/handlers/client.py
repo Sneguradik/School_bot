@@ -78,4 +78,4 @@ def register_handlers_client(dp:Dispatcher):
     dp.register_message_handler(reg_surname, state=RegisterFMS.surname)
     dp.register_message_handler(reg_grade_num, state=RegisterFMS.grade_num)
     dp.register_message_handler(reg_grade_letter, state=RegisterFMS.grade_letter)
-    
+    dp.register_message_handler(get_events, commands=['Events'])

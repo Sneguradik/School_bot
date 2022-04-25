@@ -1,4 +1,4 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, InlineKeyboardButton, InlineKeyboardMarkup
 
 class ComandKeyboard:
     kb = ReplyKeyboardMarkup(resize_keyboard=True)
@@ -7,5 +7,6 @@ class ComandKeyboard:
         for b in args:
             self.kb.add(b)
 
-kbc = ComandKeyboard(True,'/register', '/start') 
+kbc = ComandKeyboard(True,'/Events', '/CreateNotification') 
 kbr = ComandKeyboard(False,'/register')   
+kbi = InlineKeyboardMarkup()
