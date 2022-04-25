@@ -20,7 +20,7 @@ class RegisterFMS(StatesGroup):
 
 async def start(message: types.Message):
     if db.get_inf('Users', 'telegram_id', message.from_user.id):
-        reply = f'Пртвет {message.from_user.first_name}'
+        reply = f'Привет {message.from_user.first_name}'
         kb = kbc.kb
     else:
         reply = 'Привет! Это чат бот для организациитвоеё работы! Пожалуйста зарегистрируйся командой /register, если ты не зарегистрировался.'
@@ -70,6 +70,8 @@ async def get_events(message: types.Message):
         for i in data:
             response = f'Название ивента: {i[0]}\nОписание ивента: {i[1]}\nДата: {i[2]}'
             await message.answer(response)
+
+
 
 def register_handlers_client(dp:Dispatcher):
     dp.register_message_handler(start, commands=['start'])

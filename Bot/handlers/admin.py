@@ -13,6 +13,11 @@ class EventFSM(StatesGroup):
     description = State()
     date = State()
 
+class SendToClassFSM(StatesGroup):
+    grade_num = State()
+    grade_letter = State()
+    text = State()
+
 async def reg_event(message: types.Message, state:FSMContext):
     users = db.get_inf('Users', 'status', "teacher")
     
@@ -48,10 +53,51 @@ async def reg_date(message: types.Message, state:FSMContext):
     await state.finish()
     await message.answer('Спасибо!')
 
+async def send_to_class(message: types.Message, state:FSMContext):
+    users = db.get_inf('Users', 'status', "teacher")
+    
+    if users:
+        print(1)
+        for user in users:
+            print(2)
+            if user[0] == message.from_user.id:
+                print(3)
+                await SendToClassFSM.grade_num.set()
+                await message.answer('Введи номер класса')
+            else:
+                pass
+    else:
+        pass
 
+async def get_class_grade(message: types.Message, state:FSMContext):
+    async with state.proxy() as data:
+        data['grade_num'] = int(message.text)
+    await SendToClassFSM.next()
+    await message.answer('Введите букву класса')
+
+async def get_class_letter(message: types.Message, state:FSMContext):
+    async with state.proxy() as data:
+        data['grade_letter'] = message.text
+    await SendToClassFSM.next()
+    await message.answer('Введите текст сообщения')
+
+async def get_text(message: types.Message, state:FSMContext):
+
+    users = db.get_Grade(state)
+    text = message.text
+    print(users)
+    for user in users:
+        print(user)
+        bot.send_message(user[0], text)
+    await state.finish()
+    await message.answer('Спасибо!')
 
 def register_handlers_admin(dp:Dispatcher):
     dp.register_message_handler(reg_event, commands=['NewEvent'],state=None)
     dp.register_message_handler(reg_event_name ,state=EventFSM.name)
     dp.register_message_handler(reg_description, state = EventFSM.description)
     dp.register_message_handler(reg_date, state=EventFSM.date)
+    dp.register_message_handler(send_to_class, commands=['SendToClass'], state=None)
+    dp.register_message_handler(get_class_grade, state=SendToClassFSM.grade_num)
+    dp.register_message_handler(get_class_letter, state=SendToClassFSM.grade_letter)
+    dp.register_message_handler(get_text, state=SendToClassFSM.text)

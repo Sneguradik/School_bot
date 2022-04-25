@@ -30,7 +30,14 @@ async def add_Event(state):
         dt = list(data.values())
         tuple(dt)
         cur.execute(f'INSERT INTO Events (name,description, date) VALUES(?,?,?)',dt)
-        db.commit()       
+        db.commit() 
+
+async def get_Grade(state):
+    async with state.proxy() as data:
+        print(data)
+        dt = list(data.values())
+        tuple(dt)
+        await cur.execute(f'SELECT * FROM Users WHERE grade_num =? AND grade_letter = ? ', dt)      
 
 if __name__ == "__main__":
     on_start()
